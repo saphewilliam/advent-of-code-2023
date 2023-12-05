@@ -236,8 +236,13 @@ function mapNumber(mapIndex, n) {
   return n;
 }
 
+const cache = new Set();
+
 function getLocationNumber(source, n) {
   if (source === 'location') return n;
+  if (cache.has(`${source}-${n}`)) return false;
+  else cache.add(`${source}-${n}`);
+
   const i = currentInput.slice(1).findIndex((v) => v.startsWith(source));
   const newSource = (new RegExp(`(${source}-to-)(.*)( map:)`)).exec(currentInput[i+1])[2];
   return getLocationNumber(newSource, mapNumber(i, n))
@@ -245,19 +250,19 @@ function getLocationNumber(source, n) {
 
 output = [Infinity, Infinity]
 
-const seedStore = []
 const seeds = currentInput[0].split(': ')[1].split(' ').map((v) => parseInt(v));
 for (const [seedIndex, seed] of seeds.entries()) {
+
+  // Part 1
   const target = getLocationNumber('seed', seed);
   if (target < output[0]) output[0] = target;
-
+  
+  // Part 2
   if (seedIndex % 2 === 0) {
-    console.log(seed, seed + seeds[seedIndex + 1]);
     for (let i = seed; i < seed + seeds[seedIndex + 1]; i++) {
-      if (seedStore[i] !== undefined) continue; 
       const target = getLocationNumber('seed', i);
-      seedStore[i] = target;
-      if (target < output[1]) output[1] = target;
+      if (target === false) console.log('hit!')
+      else if (target < output[1]) output[1] = target;
     }
   }
 }
